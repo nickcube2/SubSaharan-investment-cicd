@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Open Sans', 'Roboto', 'Lato', Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Color Scheme Variables */
+  --color-primary: #0F2C64;      /* Deep Sapphire */
+  --color-secondary: #1667A7;    /* Azure Blue */
+  --color-accent: #26A4DD;       /* Sky Blue */
+  --color-background: #03112c;
+   --hero-bg-color: #042125;
+  color-scheme: light dark;
+  /* color: var(--color-accent); */
+  background-color: var(--color-background);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.pri-bg-color{
+  background-color: var(--color-background);
+}
+.her-bg-color{
+  background-color: var(--hero-bg-color);
+}
+
+.bg-gradient{
+  background: linear-gradient(180deg, #03112c 0%, #1155DD 100%);
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
