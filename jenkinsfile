@@ -1,0 +1,35 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        REGISTRY = "localhost:5000/subsaharan-app"  // Optional local registry
+    }
+
+    stages {
+        stage('Build Next.js') {
+            steps {
+                sh 'npm ci'
+                sh 'npm run build'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def image = docker.build("subsaharan-app:${IMAGE_TAG}")
+                    // Optional: Push to local registry if running one
+                }
+            }
+        }
+
+        stage('Deploy Canary to Local K8s') {
+            steps {
+                sh """
+                sed -e "s|IMAGE|subsaharan-app:${IMAGE_TAG}|g" k8s/deployment.yml.j2 > k8s/deployment.yml
+                kubectl apply -f k8s/deployment.yml -f k8s/service.yml -f k8s/ingress.yml -f k8s/canary.yml
+                """
+            }
+        }
+    }
+}

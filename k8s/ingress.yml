@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: subsaharan-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx  # Fixed deprecation
+  rules:
+  - http:
+      paths:
+      - path: /(/|$)(.*)  # Captures optional / and the rest
+        pathType: ImplementationSpecific  # Required for regex
+        backend:
+          service:
+            name: subsaharan-service
+            port:
+              number: 80

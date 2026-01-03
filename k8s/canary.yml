@@ -1,0 +1,28 @@
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: subsaharan-app
+spec:
+  provider: nginx
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: subsaharan-app
+  ingressRef:
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    name: subsaharan-ingress
+  service:
+    port: 80
+  analysis:
+    interval: 1m
+    threshold: 3
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+    - name: request-success-rate
+      thresholdRange:
+        min: 99
+    - name: request-duration
+      thresholdRange:
+        max: 500

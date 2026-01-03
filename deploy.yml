@@ -1,0 +1,22 @@
+---
+- name: Deploy SubSaharan App to Kubernetes
+  hosts: k8s-master
+  become: yes
+  tasks:
+    - name: Apply Kubernetes Deployment
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', 'deployment.yml.j2') }}"
+        namespace: "{{ namespace }}"
+
+    - name: Apply Kubernetes Service
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', 'service.yml.j2') }}"
+        namespace: "{{ namespace }}"
+
+    - name: Apply Kubernetes Ingress (optional for exposure)
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', 'ingress.yml.j2') }}"
+        namespace: "{{ namespace }}"

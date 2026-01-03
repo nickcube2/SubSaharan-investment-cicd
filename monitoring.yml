@@ -1,0 +1,30 @@
+---
+- name: Setup Prometheus and Grafana on Kubernetes
+  hosts: k8s-master
+  become: yes
+  tasks:
+    - name: Add Helm Repo for Prometheus
+      kubernetes.core.helm_repository:
+        name: prometheus-community
+        repo_url: https://prometheus-community.github.io/helm-charts
+
+    - name: Deploy Prometheus Stack (includes Grafana)
+      kubernetes.core.helm:
+        name: monitoring
+        chart_ref: prometheus-community/kube-prometheus-stack
+        release_namespace: "{{ namespace }}"
+        values:
+          prometheus:
+            service:
+              type: LoadBalancer
+          grafana:
+            service:
+              type: LoadBalancer
+          alertmanager:
+            enabled: false  # Optional, disable if not needed
+
+    - name: Configure ServiceMonitor for App
+      kubernetes.core.k8s:
+        state: present
+        definition: "{{ lookup('template', 'servicemonitor.yml.j2') }}"
+        namespace: "{{ namespace }}"
