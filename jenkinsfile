@@ -1,35 +1,48 @@
 pipeline {
     agent any
-
     environment {
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
-        REGISTRY = "localhost:5000/subsaharan-app"  // Optional local registry
+        IMAGE_NAME = 'archsol22/subsaharan-app'  // Optional: push to Docker Hub
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
-
     stages {
-        stage('Build Next.js') {
+        stage('Checkout') {
             steps {
-                sh 'npm ci'
-                sh 'npm run build'
+                checkout scm
             }
         }
-
         stage('Build Docker Image') {
             steps {
-                script {
-                    def image = docker.build("subsaharan-app:${IMAGE_TAG}")
-                    // Optional: Push to local registry if running one
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh 'docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest'
+            }
+        }
+        stage('Push to Registry (Optional)') {
+            steps {
+                withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
+                    sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+                    sh 'docker push ${IMAGE_NAME}:latest'
                 }
             }
         }
-
-        stage('Deploy Canary to Local K8s') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh """
-                sed -e "s|IMAGE|subsaharan-app:${IMAGE_TAG}|g" k8s/deployment.yml.j2 > k8s/deployment.yml
-                kubectl apply -f k8s/deployment.yml -f k8s/service.yml -f k8s/ingress.yml -f k8s/canary.yml
-                """
+                sh 'kubectl apply -f k8s/deployment.yaml'
+                sh 'kubectl rollout status deployment/subsaharan-app'
             }
+        }
+        stage('Ansible Post-Deployment (Optional)') {
+            steps {
+                ansiblePlaybook(
+                    playbook: 'ansible/deploy.yml',  // Create simple playbook if needed
+                    inventory: 'ansible/inventory.ini'
+                )
+            }
+        }
+        
+    }
+    post {
+        always {
+            sh 'docker system prune -f'  // Cleanup
         }
     }
 }
