@@ -14,6 +14,7 @@ pipeline {
             steps {
                 script {
                     def appImage = docker.build("archsol22/subsaharan-app:${BUILD_NUMBER}")
+                    appImage.tag("latest")
                 }
             }
         }
