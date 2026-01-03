@@ -2,30 +2,38 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: subsaharan-app
+  labels:
+    app: subsaharan-app
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: subsaharan
+      app: subsaharan-app
   template:
     metadata:
       labels:
-        app: subsaharan
+        app: subsaharan-app
     spec:
       containers:
-      - name: app
-        image: localhost:5001/subsaharan-app:v1  # Updated port
-        imagePullPolicy: IfNotPresent
+      - name: subsaharan-app
+        image: subsaharan-app:latest  # Local image or your Docker Hub repo
         ports:
         - containerPort: 3000
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 15
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 3000
-          initialDelaySeconds: 30
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subsaharan-service
+spec:
+  selector:
+    app: subsaharan-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: NodePort  # Or LoadBalancer if using Minikube
+  
